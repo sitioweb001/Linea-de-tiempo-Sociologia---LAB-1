@@ -1,1 +1,1 @@
-# L-nea-de-tiempo-Sociolog-a---LAB-1
+2 X 1 EN BURROS HAAAAAAAAAAAAAAA!!!!!!!!
