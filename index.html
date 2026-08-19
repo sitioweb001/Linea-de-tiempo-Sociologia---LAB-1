@@ -495,6 +495,12 @@
         color: var(--ink-soft);
         font-family: 'Special Elite', monospace;
     }
+    .credits-logo {
+        display: block;
+        margin: 22px auto 0;
+        width: clamp(160px, 32vw, 260px);
+        height: auto;
+    }
 
     /* -------------------------------------------------- RESPONSIVE -------------------------------------------------- */
     @media screen and (max-width: 760px) {
@@ -569,7 +575,9 @@
 </div>
 
 <footer class="credits">
-    <div class="credits-inner" id="creditsInner">        
+    <div class="credits-inner" id="creditsInner">
+        <div class="credits-flourish">❦</div>
+        <p class="credits-label">Trabajo de investigación elaborado para la cátedra de Sociología</p>
         <div class="credits-block">
             <span class="credits-role">Docente</span>
             <span class="credits-name">Lic. Kevin Francisco Muñoz Paniagua</span>
@@ -583,6 +591,7 @@
             </ul>
         </div>
         <p class="credits-year">2026</p>
+        <img class="credits-logo" src="Logotipo-horizontal-azul.png" alt="Universidad Gerardo Barrios" loading="lazy">
     </div>
 </footer>
 
