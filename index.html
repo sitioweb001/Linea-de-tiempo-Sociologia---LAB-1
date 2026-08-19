@@ -1,1 +1,842 @@
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+    <title>Desarrollo Histórico de la Sociología</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
+
+        :root {
+            --paper-bg: #e8ddcb;
+            --paper-dark: #d8cbb3;
+            --text-dark: #3e2723;
+            --badge-bg: #4e342e;
+            --badge-text: #f4eadd;
+            --line-color: #795548;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--paper-bg);
+            background-image:
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.05) 100%),
+                url('data:image/svg+xml;utf8,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E');
+            font-family: 'Lora', serif;
+            color: var(--text-dark);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 20px 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-bottom: 2px dashed var(--line-color);
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.8rem, 8vw, 4rem);
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 0 0 10px 0;
+            color: var(--text-dark);
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .header p {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+            font-style: italic;
+            margin: 0;
+            color: #5d4037;
+        }
+        .header .call {
+            margin-top: 15px;
+            font-size: 0.95rem;
+            background: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 0.5rem 1.8rem;
+            border-radius: 40px;
+            display: inline-block;
+            font-style: normal;
+            font-family: 'Lora', serif;
+            box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 0 80px 0;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--line-color);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+
+        .event-item {
+            position: relative;
+            width: 50%;
+            padding: 10px 40px;
+            box-sizing: border-box;
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease, filter 0.3s ease;
+            display: flex;
+            align-items: flex-start;
+            z-index: 1;
+        }
+        .event-item.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .event-item:hover {
+            filter: brightness(1.04);
+        }
+        .event-item:hover .badge {
+            background: #5d4037;
+        }
+
+        .event-item.left {
+            left: 0;
+            justify-content: flex-end;
+        }
+        .event-item.right {
+            left: 50%;
+            justify-content: flex-start;
+        }
+
+        /* Círculo con miniatura - tamaño fijo 80x80px */
+        .circle-wrap {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 50%;
+            z-index: 3;
+            box-shadow: 0 0 0 2px var(--line-color), 2px 2px 8px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            border: 4px solid var(--badge-bg);
+            background-color: var(--paper-dark);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .event-item:hover .circle-wrap {
+            transform: translateY(-50%) scale(1.05);
+        }
+        .circle-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .circle-wrap .fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 2rem;
+            color: var(--badge-bg);
+            background: var(--paper-dark);
+        }
+        .left .circle-wrap {
+            right: -42px;
+        }
+        .right .circle-wrap {
+            left: -42px;
+        }
+
+        .badge {
+            background-color: var(--badge-bg);
+            color: var(--badge-text);
+            padding: 12px 22px;
+            border-radius: 4px;
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+            text-align: center;
+            box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.4);
+            border: 1px solid #3e2723;
+            max-width: 85%;
+            position: relative;
+            z-index: 2;
+            transition: background 0.2s;
+            pointer-events: none;
+        }
+        .badge .fecha {
+            font-weight: 400;
+            opacity: 0.9;
+            font-size: 0.8em;
+            display: block;
+        }
+        .badge .titulo {
+            font-weight: 700;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .connector {
+            width: 2px;
+            height: 30px;
+            border-left: 2px dashed var(--line-color);
+            flex-shrink: 0;
+        }
+        .left .connector {
+            order: 1;
+            margin-right: 12px;
+        }
+        .right .connector {
+            order: -1;
+            margin-left: 12px;
+        }
+
+        .event-item .content-inner {
+            display: flex;
+            align-items: center;
+        }
+
+        /* MODAL - diseño centrado con imagen de tamaño fijo 500x400px */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .modal.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--paper-bg);
+            background-image: url('data:image/svg+xml;utf8,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22 opacity=%220.05%22/%3E%3C/svg%3E');
+            margin: 3% auto;
+            padding: 30px 30px 40px;
+            border: 3px solid var(--badge-bg);
+            width: 92%;
+            max-width: 760px;
+            border-radius: 12px;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            max-height: 94vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .close {
+            color: var(--text-dark);
+            position: sticky;
+            top: 0;
+            align-self: flex-end;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            font-family: sans-serif;
+            transition: color 0.2s;
+            z-index: 10;
+            background: rgba(232, 221, 203, 0.8);
+            padding: 0 8px;
+            border-radius: 4px;
+            border: none;
+            line-height: 1;
+            margin-bottom: 10px;
+        }
+        .close:hover,
+        .close:focus {
+            color: #d84315;
+        }
+
+        /* Imagen con tamaño fijo 500x400px y object-fit: cover */
+        .modal-img-container {
+            width: 100%;
+            max-width: 500px;
+            height: 400px;
+            margin: 0 auto 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid var(--badge-bg);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: var(--paper-dark);
+            flex-shrink: 0;
+        }
+        .modal-img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .modal-img-container .fallback {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 4rem;
+            color: var(--badge-bg);
+            background: var(--paper-dark);
+        }
+
+        /* Título y fecha centrados */
+        .modal-header-center {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed var(--line-color);
+            width: 100%;
+        }
+        .modal-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            margin: 0 0 4px 0;
+            color: var(--badge-bg);
+        }
+        .modal-date {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #5d4037;
+            margin: 0;
+        }
+
+        .modal-body {
+            font-size: 1.05rem;
+            line-height: 1.7;
+            width: 100%;
+            max-width: 650px;
+            text-align: left;
+        }
+        .modal-body ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        .modal-body li {
+            margin-bottom: 6px;
+        }
+        .modal-body .destacado {
+            background: rgba(78, 52, 46, 0.08);
+            padding: 12px 16px;
+            border-left: 4px solid var(--badge-bg);
+            border-radius: 4px;
+            margin: 12px 0;
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            .timeline::after {
+                left: 30px;
+            }
+            .event-item {
+                width: 100%;
+                left: 0 !important;
+                padding-left: 90px;
+                padding-right: 20px;
+                justify-content: flex-start !important;
+            }
+            .circle-wrap {
+                left: 30px !important;
+                right: auto !important;
+                width: 60px;
+                height: 60px;
+                top: 50%;
+                transform: translateY(-50%);
+            }
+            .event-item:hover .circle-wrap {
+                transform: translateY(-50%) scale(1.05);
+            }
+            .connector {
+                order: 0 !important;
+                margin: 0 8px 0 0 !important;
+            }
+            .badge {
+                max-width: 100%;
+                font-size: 0.9rem;
+                padding: 8px 14px;
+            }
+            .modal-content {
+                padding: 20px;
+                margin: 5% auto;
+            }
+            .modal-title {
+                font-size: 1.8rem;
+            }
+            .modal-img-container {
+                max-width: 100%;
+                height: 300px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            .event-item {
+                padding-left: 70px;
+                padding-top: 6px;
+                padding-bottom: 6px;
+            }
+            .circle-wrap {
+                width: 50px;
+                height: 50px;
+                left: 20px !important;
+            }
+            .badge {
+                font-size: 0.75rem;
+                padding: 6px 10px;
+            }
+            .modal-title {
+                font-size: 1.5rem;
+            }
+            .modal-date {
+                font-size: 1rem;
+            }
+            .modal-content {
+                padding: 15px;
+            }
+            .modal-img-container {
+                height: 200px;
+            }
+        }
+
+        @media screen and (min-width: 769px) and (max-width: 1024px) {
+            .modal-img-container {
+                height: 350px;
+                max-width: 450px;
+            }
+        }
+
+        .modal-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: var(--paper-dark);
+            border-radius: 10px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: var(--badge-bg);
+            border-radius: 10px;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>Sociología</h1>
+        <p>Desarrollo Histórico, Obras y Corrientes Fundamentales</p>
+        <div class="call">👆 Haz clic en cualquier elemento para ampliar</div>
+    </div>
+
+    <div class="timeline" id="timeline"></div>
+
+    <!-- MODAL con diseño centrado e imagen 500x400px -->
+    <div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-content">
+            <button class="close" id="closeModalBtn" aria-label="Cerrar modal">&times;</button>
+
+            <!-- Imagen centrada con tamaño fijo 500x400px -->
+            <div class="modal-img-container" id="modalImgContainer">
+                <img id="modalImg" src="" alt="Imagen del evento">
+            </div>
+
+            <!-- Título y fecha centrados -->
+            <div class="modal-header-center">
+                <h2 class="modal-title" id="modalTitle">Título</h2>
+                <p class="modal-date" id="modalDate">Fecha</p>
+            </div>
+
+            <!-- Cuerpo con información -->
+            <div class="modal-body" id="modalBody">
+                Detalles...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // --------------------------------------------------------------
+            // DATOS DE LOS 16 EVENTOS con imágenes 1.jpg al 16.jpg
+            // --------------------------------------------------------------
+            const events = [{
+                fecha: '1685 – 1800',
+                titulo: 'Ilustración',
+                imagen: '1.jpg',
+                contenido: `
+              <p><b>¿Qué fue?</b> Movimiento intelectual y cultural que dominó Europa en el siglo XVIII, promoviendo la razón, la ciencia y la crítica a la tradición y la autoridad absoluta.</p>
+              <p>Pensadores como Montesquieu, Voltaire, Rousseau y Diderot sentaron las bases para el análisis crítico de la sociedad, la política y la economía.</p>
+              <div class="destacado"><b>Importancia para la Sociología:</b> Proporcionó el método racional y la confianza en la observación empírica que luego adoptaría la Sociología como ciencia.</div>
+              <p><b>Conceptos clave:</b> Razón, libertad, progreso, contrato social, separación de poderes.</p>
+            `
+            }, {
+                fecha: '1789 – 1799',
+                titulo: 'Revolución Francesa',
+                imagen: '2.jpg',
+                contenido: `
+              <p><b>Contexto:</b> Proceso social y político que transformó radicalmente la estructura del Antiguo Régimen en Francia, derrocando la monarquía absoluta y el orden feudal.</p>
+              <p>La toma de la Bastilla (1789) simboliza el inicio de un cambio que extendió ideales de libertad, igualdad y fraternidad.</p>
+              <div class="destacado"><b>Importancia para la Sociología:</b> Puso en evidencia la dinámica de los movimientos sociales y la construcción de nuevos órdenes políticos.</div>
+              <p><b>Conceptos clave:</b> Ciudadanía, derechos humanos, soberanía popular, cambio social.</p>
+            `
+            }, {
+                fecha: '1760 – 1840',
+                titulo: 'Revolución Industrial',
+                imagen: '3.jpg',
+                contenido: `
+              <p><b>Contexto:</b> Transformación económica y tecnológica que sustituyó la producción artesanal por la mecanización fabril, generando urbanización masiva y la formación del proletariado.</p>
+              <p>Las condiciones de vida y trabajo de la clase obrera se convirtieron en un problema social que impulsó el estudio sistemático de la sociedad.</p>
+              <div class="destacado"><b>Importancia para la Sociología:</b> Generó la "cuestión social" que motivó a los primeros sociólogos a investigar los problemas de la industrialización y la desigualdad.</div>
+              <p><b>Conceptos clave:</b> Capitalismo, clases sociales, proletariado, urbanización, anomia.</p>
+            `
+            }, {
+                fecha: '1760 – 1825',
+                titulo: 'Saint-Simon',
+                imagen: '4.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Henri de Saint-Simon, filósofo y teórico social francés, precursor del pensamiento sociológico y del socialismo utópico.</p>
+              <p>Propuso una sociedad organizada científicamente, basada en la industria y la producción, y anticipó el positivismo de Comte.</p>
+              <div class="destacado"><b>Principales aportes:</b> La idea de una ciencia de la sociedad, crítica al feudalismo, defensa del desarrollo industrial como motor del progreso.</div>
+              <p><b>Obras importantes:</b> <em>La industria</em> (1817), <em>El nuevo cristianismo</em> (1825).</p>
+            `
+            }, {
+                fecha: '1798 – 1857',
+                titulo: 'Augusto Comte',
+                imagen: '5.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Padre de la Sociología, acuñó el término en 1838. Desarrolló el positivismo, método científico para estudiar la sociedad.</p>
+              <p>Ley de los tres estados: teológico, metafísico y positivo (científico).</p>
+              <div class="destacado"><b>Principales aportes:</b> Fundación de la Sociología como disciplina, método positivista, ley de los tres estados.</div>
+              <p><b>Obras importantes:</b> <em>Curso de filosofía positiva</em> (1830-1842), <em>Sistema de política positiva</em> (1851-1854).</p>
+            `
+            }, {
+                fecha: '1820 – 1903',
+                titulo: 'Herbert Spencer',
+                imagen: '6.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Filósofo y sociólogo inglés, aplicó la teoría de la evolución a la sociedad, comparándola con un organismo vivo.</p>
+              <p>Acuñó la frase "supervivencia del más apto" y defendió el liberalismo individualista.</p>
+              <div class="destacado"><b>Principales aportes:</b> Evolucionismo social, funcionalismo orgánico, concepto de diferenciación social.</div>
+              <p><b>Obras importantes:</b> <em>Principios de Sociología</em> (1876-1896), <em>El individuo contra el Estado</em> (1884).</p>
+            `
+            }, {
+                fecha: '1818 – 1883',
+                titulo: 'Karl Marx',
+                imagen: '7.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Filósofo, economista y sociólogo alemán, fundador del materialismo histórico y la teoría del conflicto.</p>
+              <p>Analizó la lucha de clases y el capitalismo como motores de la historia, y la alienación del trabajador.</p>
+              <div class="destacado"><b>Principales aportes:</b> Materialismo histórico, plusvalía, alienación, lucha de clases, teoría del valor-trabajo.</div>
+              <p><b>Obras importantes:</b> <em>El capital</em> (1867), <em>El manifiesto comunista</em> (1848).</p>
+            `
+            }, {
+                fecha: '1858 – 1917',
+                titulo: 'Émile Durkheim',
+                imagen: '8.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Sociólogo francés, padre de la sociología académica. Definió los "hechos sociales" como objeto de estudio.</p>
+              <p>Analizó la solidaridad social (mecánica y orgánica), la anomia y el suicidio como fenómeno social.</p>
+              <div class="destacado"><b>Principales aportes:</b> Hechos sociales, solidaridad mecánica/orgánica, anomia, método sociológico.</div>
+              <p><b>Obras importantes:</b> <em>La división del trabajo social</em> (1893), <em>El suicidio</em> (1897), <em>Las formas elementales de la vida religiosa</em> (1912).</p>
+            `
+            }, {
+                fecha: '1864 – 1920',
+                titulo: 'Max Weber',
+                imagen: '9.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Sociólogo alemán, fundador de la sociología comprensiva. Se centró en la acción social y los significados subjetivos.</p>
+              <p>Analizó la racionalización, la burocracia, y la relación entre ética protestante y capitalismo.</p>
+              <div class="destacado"><b>Principales aportes:</b> Acción social, tipos ideales, racionalización, ética protestante, burocracia.</div>
+              <p><b>Obras importantes:</b> <em>La ética protestante y el espíritu del capitalismo</em> (1905), <em>Economía y sociedad</em> (1922).</p>
+            `
+            }, {
+                fecha: 'Siglos XIX – XX',
+                titulo: 'Funcionalismo',
+                imagen: '10.jpg',
+                contenido: `
+              <p><b>Corriente sociológica</b> que concibe la sociedad como un sistema de partes interrelacionadas que cumplen funciones para mantener la estabilidad y el orden.</p>
+              <p>Inspirado en Durkheim y Spencer, fue desarrollado por Parsons y Merton.</p>
+              <div class="destacado"><b>Principales características:</b> Enfoque en el consenso, estabilidad, función latente y manifiesta, interrelación sistémica.</div>
+              <p><b>Conceptos clave:</b> Función, disfunción, sistema social, estructura, equilibrio.</p>
+            `
+            }, {
+                fecha: 'Siglos XIX – XX',
+                titulo: 'Teoría del conflicto',
+                imagen: '11.jpg',
+                contenido: `
+              <p><b>Corriente sociológica</b> basada en la obra de Marx, enfatiza la lucha entre grupos sociales por el poder y los recursos.</p>
+              <p>Autores como Dahrendorf y Coser ampliaron esta perspectiva.</p>
+              <div class="destacado"><b>Principales características:</b> Desigualdad, dominación, cambio social, antagonismo de clases.</div>
+              <p><b>Conceptos clave:</b> Lucha de clases, poder, ideología, revolución, coerción.</p>
+            `
+            }, {
+                fecha: 'Primeras décadas S.XX',
+                titulo: 'Interaccionismo simbólico',
+                imagen: '12.jpg',
+                contenido: `
+              <p><b>Corriente sociológica</b> que estudia la interacción cotidiana y los significados que las personas otorgan a los símbolos (lenguaje, gestos).</p>
+              <p>Fundado por Mead y desarrollado por Blumer.</p>
+              <div class="destacado"><b>Principales características:</b> Enfoque microsociológico, construcción social de la realidad, papel del lenguaje y el yo.</div>
+              <p><b>Conceptos clave:</b> Símbolo, interacción, self, mente, rol.</p>
+            `
+            }, {
+                fecha: '1923 – presente',
+                titulo: 'Teoría crítica (Escuela de Frankfurt)',
+                imagen: '13.jpg',
+                contenido: `
+              <p><b>Corriente sociológica</b> que combina filosofía y ciencias sociales para criticar la sociedad capitalista, la cultura de masas y la razón instrumental.</p>
+              <p>Representantes: Horkheimer, Adorno, Marcuse, Habermas.</p>
+              <div class="destacado"><b>Principales aportes:</b> Crítica de la industria cultural, teoría de la acción comunicativa, análisis de la dominación.</div>
+              <p><b>Conceptos clave:</b> Racionalidad instrumental, industria cultural, emancipación, esfera pública.</p>
+            `
+            }, {
+                fecha: '1930 – 2002',
+                titulo: 'Pierre Bourdieu',
+                imagen: '14.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Sociólogo francés, desarrolló conceptos como habitus, campo y capital cultural, analizando la reproducción de las desigualdades.</p>
+              <p>Su obra influyó en la sociología de la educación, la cultura y el poder.</p>
+              <div class="destacado"><b>Principales aportes:</b> Habitus, campo, capital cultural, reproducción social, violencia simbólica.</div>
+              <p><b>Obras importantes:</b> <em>La distinción</em> (1979), <em>Los herederos</em> (1964), <em>El sentido práctico</em> (1980).</p>
+            `
+            }, {
+                fecha: '1938 – actualidad',
+                titulo: 'Anthony Giddens',
+                imagen: '15.jpg',
+                contenido: `
+              <p><b>Perfil:</b> Sociólogo británico, conocido por su teoría de la estructuración, que supera la dualidad estructura/agencia.</p>
+              <p>Ha analizado la modernidad, la globalización y la política de la vida cotidiana.</p>
+              <div class="destacado"><b>Principales aportes:</b> Teoría de la estructuración, modernidad reflexiva, consecuencias de la modernidad.</div>
+              <p><b>Obras importantes:</b> <em>La constitución de la sociedad</em> (1984), <em>Modernidad e identidad del yo</em> (1991), <em>La tercera vía</em> (1998).</p>
+            `
+            }, {
+                fecha: '2000 – actualidad',
+                titulo: 'Sociología del siglo XXI',
+                imagen: '16.jpg',
+                contenido: `
+              <p><b>Ejes temáticos actuales:</b> globalización, cambio climático, identidades, digitalización, movimientos sociales y nuevas formas de desigualdad.</p>
+              <p>Enfoques interdisciplinarios y metodologías mixtas (big data, análisis de redes, estudios culturales).</p>
+              <div class="destacado"><b>Principales temas:</b> Globalización, interseccionalidad, inteligencia artificial, crisis ecológica, activismo digital.</div>
+              <p><b>Enfoques actuales:</b> Sociología ambiental, sociología digital, teoría queer, decolonialidad, estudios de ciencia y tecnología.</p>
+            `
+            }];
+
+            // --------------------------------------------------------------
+            // DOM references
+            const timelineEl = document.getElementById('timeline');
+            const modal = document.getElementById('infoModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDate = document.getElementById('modalDate');
+            const modalBody = document.getElementById('modalBody');
+            const modalImg = document.getElementById('modalImg');
+            const modalImgContainer = document.getElementById('modalImgContainer');
+            const closeBtn = document.getElementById('closeModalBtn');
+
+            let isModalOpen = false;
+
+            // --------------------------------------------------------------
+            // Función para abrir modal
+            // --------------------------------------------------------------
+            function abrirModal(index) {
+                const ev = events[index];
+                if (!ev) return;
+
+                // Título y fecha
+                modalTitle.textContent = ev.titulo;
+                modalDate.textContent = ev.fecha;
+                modalBody.innerHTML = ev.contenido;
+
+                // Imagen con object-fit: cover (ya en CSS)
+                modalImg.style.display = 'block';
+                modalImg.src = ev.imagen;
+                modalImg.alt = `Imagen de ${ev.titulo}`;
+                modalImg.onerror = function() {
+                    this.style.display = 'none';
+                    // Mostrar fallback en el contenedor
+                    const container = this.parentElement;
+                    const existing = container.querySelector('.fallback');
+                    if (!existing) {
+                        const fallback = document.createElement('span');
+                        fallback.className = 'fallback';
+                        fallback.textContent = '📜';
+                        container.appendChild(fallback);
+                    }
+                };
+                // Limpiar fallback si la imagen carga
+                modalImg.onload = function() {
+                    const container = this.parentElement;
+                    const fallback = container.querySelector('.fallback');
+                    if (fallback) fallback.remove();
+                    this.style.display = 'block';
+                };
+
+                // Abrir modal
+                modal.classList.add('show');
+                modal.style.display = 'block';
+                document.body.classList.add('modal-open');
+                isModalOpen = true;
+
+                closeBtn.focus();
+                document.addEventListener('keydown', handleEscape);
+            }
+
+            function cerrarModal() {
+                if (!isModalOpen) return;
+                isModalOpen = false;
+                modal.classList.remove('show');
+                document.body.classList.remove('modal-open');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                }, 300);
+                document.removeEventListener('keydown', handleEscape);
+            }
+
+            function handleEscape(e) {
+                if (e.key === 'Escape') {
+                    cerrarModal();
+                }
+            }
+
+            // Cerrar modal
+            closeBtn.addEventListener('click', cerrarModal);
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    cerrarModal();
+                }
+            });
+
+            // --------------------------------------------------------------
+            // Generar timeline
+            // --------------------------------------------------------------
+            events.forEach((ev, index) => {
+                const side = index % 2 === 0 ? 'left' : 'right';
+
+                const item = document.createElement('div');
+                item.className = `event-item ${side}`;
+                item.dataset.index = index;
+
+                // Círculo con imagen
+                const circle = document.createElement('div');
+                circle.className = 'circle-wrap';
+                const img = document.createElement('img');
+                img.src = ev.imagen;
+                img.alt = ev.titulo;
+                img.loading = 'lazy';
+                img.onerror = function() {
+                    this.style.display = 'none';
+                    const fallback = document.createElement('span');
+                    fallback.className = 'fallback';
+                    fallback.textContent = '📜';
+                    this.parentElement.appendChild(fallback);
+                };
+                circle.appendChild(img);
+                item.appendChild(circle);
+
+                // Contenido interno
+                const inner = document.createElement('div');
+                inner.className = 'content-inner';
+
+                const connector = document.createElement('div');
+                connector.className = 'connector';
+
+                const badge = document.createElement('div');
+                badge.className = 'badge';
+                badge.innerHTML = `<span class="fecha">${ev.fecha}</span><span class="titulo">${ev.titulo}</span>`;
+
+                if (side === 'left') {
+                    inner.appendChild(connector);
+                    inner.appendChild(badge);
+                } else {
+                    inner.appendChild(badge);
+                    inner.appendChild(connector);
+                }
+
+                item.appendChild(inner);
+
+                // Evento de clic
+                item.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const idx = parseInt(this.dataset.index, 10);
+                    if (!isNaN(idx)) {
+                        abrirModal(idx);
+                    }
+                });
+
+                // Accesibilidad
+                item.setAttribute('tabindex', '0');
+                item.setAttribute('role', 'button');
+                item.setAttribute('aria-label', `Abrir información sobre ${ev.titulo}`);
+                item.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        const idx = parseInt(this.dataset.index, 10);
+                        if (!isNaN(idx)) {
+                            abrirModal(idx);
+                        }
+                    }
+                });
+
+                timelineEl.appendChild(item);
+            });
+
+            // --------------------------------------------------------------
+            // IntersectionObserver
+            // --------------------------------------------------------------
+            const items = document.querySelectorAll('.event-item');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -20px 0px' });
+
+            items.forEach((el) => {
+                observer.observe(el);
+                const rect = el.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 50) {
+                    el.classList.add('visible');
+                }
+            });
+
+            console.log('✅ Línea de tiempo cargada. Imágenes: 1.jpg al 16.jpg (500x400px)');
+        })();
+    </script>
+
+</body>
+</html>
